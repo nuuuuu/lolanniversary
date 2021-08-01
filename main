@@ -1,0 +1,71 @@
+ThisWorkbook.Sheets(1).Name = "Source"
+ThisWorkbook.Sheets(2).Delete
+Worksheets.Add(After:=Worksheets(Worksheets.Count)).Name = "Series"
+
+
+ Dim web, url, webdata, text
+   
+    ThisWorkbook.Worksheets("Source").Cells.ClearContents  '清除之前資料
+   
+    url = "https://www.ptt.cc/bbs/LoL/M.1627283659.A.EBE.html"
+    Set web = CreateObject("Microsoft.XMLHTTP")
+    web.Open "get", url, False
+    web.send
+    webdata = Split(web.responseText, vbLf)
+   
+   
+    For j = 0 To UBound(webdata)
+         ThisWorkbook.Worksheets("Source").Cells(j + 1, 1).NumberFormatLocal = "@" '將儲存格設為文字.否則遇到有等號開頭就會出錯'
+         ThisWorkbook.Worksheets("Source").Cells(j + 1, 1).Value = webdata(j)
+    Next
+    
+
+For j = 1 To Sheets(1).Cells(ActiveSheet.Rows.Count, 1).End(xlUp).Row
+  
+
+    If InStr(Sheets(1).Cells(j + 72, 1), "LOL") Then
+    Sheets(2).Cells(j, 1) = Sheets(1).Cells(j + 72, 1)
+    Sheets(2).Cells(j, 4) = Sheets(1).Cells(j + 72, 1)
+    End If
+    
+    If Cells(j, 1).Value = "" Then
+    Cells(j, 1).Select
+    Cells(j, 4).Select
+    Selection.EntireRow.Delete
+    End If
+
+Next
+
+Sheets(2).Range("A:A").Replace "*>:", ""
+Sheets(2).Range("A:A").Replace "</*", ""
+Sheets(2).Range("A:A").Replace " ", ""
+Sheets(2).Range("A:A").Replace "*:", ""
+Sheets(2).Range("D:D").Replace "*time*> ", ""
+Sheets(2).Columns("a:a").SpecialCells(xlCellTypeBlanks).EntireRow.Delete
+Sheets(2).Columns("d:d").SpecialCells(xlCellTypeBlanks).EntireRow.Delete
+Sheets(2).Columns("A:A").ColumnWidth = 20
+Sheets(2).Columns("d:d").ColumnWidth = 16
+
+ Dim objRegExp As Object
+    Dim i As Long, arr
+    arr = Range("a1:b" & Cells(Rows.Count, 1).End(xlUp).Row).Value
+    Set objRegExp = CreateObject("VBScript.regExp")
+    With objRegExp
+        .Global = True
+        .Pattern = "[\u4e00-\u9fa5]{1,}"
+        For i = 1 To UBound(arr)
+            'If .test(arr(i, 1)) Then
+            arr(i, 1) = .Replace(arr(i, 1), "")
+            'End If
+        Next
+    End With
+    Set objRegExp = Nothing
+    Range("a1").Resize(UBound(arr)) = arr
+
+For j = 1 To Sheets(2).Cells(ActiveSheet.Rows.Count, 1).End(xlUp).Row
+
+Sheets(2).Cells(j, 1) = Left(Sheets(2).Cells(j, 1), 13)
+    
+Next
+    
+Cells(1, 1).Select
